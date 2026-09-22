@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # qpdf and ghostscript are system binaries generatePdfBatched/
+      # generateChunkedPdf and compress rely on - install them so tests
+      # that exercise those paths actually run in CI, not just locally.
+      - name: Install system dependencies (qpdf, ghostscript)
+        run: sudo apt-get update && sudo apt-get install -y qpdf ghostscript
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Puppeteer's bundled Chromium needs these on a bare Ubuntu runner,
+      # or generatePdf() fails with a cryptic "Failed to launch browser" error.
+      - name: Install Chromium system dependencies
+        run: npx puppeteer browsers install chrome
+
+      - name: Run tests
+        run: npm test --if-present
+
+      # Catches "files"/package.json mistakes (missing entries, stray
+      # node_modules, etc.) before they'd ever reach a real publish.
+      - name: Verify package contents
+        run: npm pack --dry-run

@@ -1,0 +1,45 @@
+name: Publish to npm
+
+# Fires only when you publish a GitHub Release - so pushing to main or
+# merging a PR never accidentally publishes a new npm version. You stay
+# in control of exactly when a release goes out.
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # required for npm provenance (see note below)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+
+      # Fails the release rather than silently publishing something broken.
+      - name: Verify package contents
+        run: npm pack --dry-run
+
+      # The release tag (e.g. v1.2.3) should match package.json's version -
+      # catches "forgot to run npm version before tagging" before it publishes.
+      - name: Check tag matches package.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+
+      - name: Publish
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
