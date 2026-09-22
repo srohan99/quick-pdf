@@ -1,0 +1,36 @@
+{
+  "name": "quick-pdf",
+  "version": "3.3.0",
+  "description": "Give it HTML + data, get back a PDF as base64 (or write straight to disk for large files). Supports Handlebars strings, .handlebars files, or native JS template functions, custom Handlebars helpers, dynamic headers/footers, automatic image/font waiting for remote assets, optional Ghostscript compression, and large-PDF-safe output. Reuses one Puppeteer browser instance for speed.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "src",
+    "examples",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node examples/example-handlebars.js"
+  },
+  "keywords": [
+    "pdf",
+    "puppeteer",
+    "html-to-pdf",
+    "handlebars",
+    "template",
+    "compression",
+    "ghostscript"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "handlebars": "^4.7.8",
+    "puppeteer": "^24.15.0"
+  },
+  "optionalDependencies": {
+    "sharp": "^0.33.5"
+  },
+  "allowScripts": {
+    "sharp@0.33.5": true,
+    "puppeteer@24.43.1": true
+  }
+}
