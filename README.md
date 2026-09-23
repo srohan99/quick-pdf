@@ -408,11 +408,11 @@ whole in every chunk, not split).
   ```js
   generateChunkedPdf({
     template, data,
-    chunkKey: ['complianceList', 'chapter17Photo.sectionOne', 'chapter17Photo.sectionTwo'],
+    chunkKey: ['questionList', 'Photo.sectionOne', 'Photo.sectionTwo'],
   });
   ```
-  This means unrelated collections such as a 228-item `complianceList` and
-  a 9-item `chapter17Photo.sectionOne` can be chunked together without padding
+  This means unrelated collections such as a 228-item `questionList` and
+  a 9-item `Photo.sectionOne` can be chunked together without padding
   either collection. For unequal arrays, `pageOffset` and `totalPages` count
   the independently rendered items across all selected arrays (under the
   usual one-item/one-page convention). Put keys in the same order their
@@ -421,7 +421,7 @@ whole in every chunk, not split).
 ## Parallel batch rendering for large item-based documents
 
 If your document is really "N items, each rendering as its own page or
-section" (e.g. 150 questions in an inspection report), `generatePdfBatched`
+section" (e.g. 150 questions in a report), `generatePdfBatched`
 splits the items into chunks and renders them **in parallel** across
 multiple Puppeteer pages under the same shared browser, then merges the
 results with `qpdf`. This is a real wall-clock speedup — it uses multiple
