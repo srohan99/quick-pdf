@@ -189,7 +189,7 @@ remote `<img>` sources before each PDF is rendered. This works with
 const result = await generateChunkedPdf({
   template,
   data,
-  chunkKey: 'findings',
+  chunkKey: 'questions',
   generateOptions: {
     optimizeImages: {
       remote: true,
@@ -207,24 +207,16 @@ normal browser image-loading path. The defaults allow 100 images per PDF and
 
 ## Automatic timeout/compress/outputPath detection
 
-`generatePdf` scans the rendered HTML for embedded/remote images and
-auto-configures three things you'd otherwise have to guess at — all
-overridable by setting them explicitly:
+generatePdf scans the rendered HTML for embedded/remote images and auto-configures three things you'd otherwise have to guess at — all overridable by setting them explicitly:
 
-- `timeout`: `30s + 1s per image`, capped at 10 minutes
-- `compress`: auto-`'standard'` once estimated weight (after any image
-  optimization above) exceeds ~20MB
-- `outputPath`: auto-generates a temp file path once estimated size
-  exceeds ~250MB (avoiding the base64 string-length crash entirely)
+timeout: 30s + 1s per image, capped at 10 minutes
+compress: auto-'standard' once estimated weight (after any image optimization above) exceeds ~20MB
+outputPath: auto-generates a temp file path once estimated size exceeds ~250MB (avoiding holding a very large PDF entirely in process memory, even as a Buffer)
 
 ```js
-// Before: manual tuning
-await generatePdf(template, data, {
-  timeout: 300000, outputPath: '/tmp/report.pdf', compress: 'standard',
-});
-
-// After: same result, auto-detected from actual content
-await generatePdf(template, data);
+// timeout, compress, and outputPath are all inferred automatically from
+// the rendered HTML's actual image weight — no manual tuning needed:
+const pdfBuffer = await generatePdf(template, data);
 ```
 
 ## Automatic image & font handling
@@ -375,8 +367,8 @@ named field must exist in `data` and be an array; nested fields use dot paths.
 ```js
 await generateChunkedPdf({
   template,
-  data: { findings: [{ title: 'Missing guardrail' }] },
-  chunkKey: 'findings',
+  data: { questions: [{ title: 'Missing guardrail' }] },
+  chunkKey: 'questions',
 });
 ```
 
@@ -388,7 +380,7 @@ generateChunkedPdf: `chunkKey` is required (array field name, or array of names,
 ```
 
 If a supplied key does not resolve to an array, it rejects with an error such
-as `generateChunkedPdf: data.findings must be an array`.
+as `generateChunkedPdf: data.questions must be an array`.
 
 Every chunk's data automatically gets: the sliced array, `isFirstChunk`,
 `isLastChunk`, `pageOffset`, `totalPages` — plus everything else from
@@ -401,26 +393,26 @@ whole in every chunk, not split).
   table) — nothing to configure, they pass through whole automatically,
   only `chunkKey`'s array gets sliced.
 - **Multiple arrays to split** — pass an array of keys. Equal-length arrays
-  (e.g. `findings[i]` and `findingImages[i]`) stay aligned by index. Arrays
+  (e.g. `questions[i]` and `answers[i]`) stay aligned by index. Arrays
   with different lengths are rendered as consecutive sections in the order
   listed in `chunkKey`, avoiding interleaved report sections:
   ```js
   generateChunkedPdf({
     template, data,
-    chunkKey: ['findings', 'findingImages'], // sliced at identical boundaries
+    chunkKey: ['questions', 'answers'], // sliced at identical boundaries
     outputPath: '/tmp/report.pdf',
   });
   ```
   Nested array fields are supported with dot paths, so data shaped like
-  `chapter17Photo: { Hull: [], Test: [] }` can be included directly:
+  `Photo: { sectionOne: [], sectionTwo: [] }` can be included directly:
   ```js
   generateChunkedPdf({
     template, data,
-    chunkKey: ['complianceList', 'chapter17Photo.Hull', 'chapter17Photo.Test'],
+    chunkKey: ['complianceList', 'chapter17Photo.sectionOne', 'chapter17Photo.sectionTwo'],
   });
   ```
   This means unrelated collections such as a 228-item `complianceList` and
-  a 9-item `chapter17Photo.Hull` can be chunked together without padding
+  a 9-item `chapter17Photo.sectionOne` can be chunked together without padding
   either collection. For unequal arrays, `pageOffset` and `totalPages` count
   the independently rendered items across all selected arrays (under the
   usual one-item/one-page convention). Put keys in the same order their
@@ -429,7 +421,7 @@ whole in every chunk, not split).
 ## Parallel batch rendering for large item-based documents
 
 If your document is really "N items, each rendering as its own page or
-section" (e.g. 150 findings in an inspection report), `generatePdfBatched`
+section" (e.g. 150 questions in an inspection report), `generatePdfBatched`
 splits the items into chunks and renders them **in parallel** across
 multiple Puppeteer pages under the same shared browser, then merges the
 results with `qpdf`. This is a real wall-clock speedup — it uses multiple
@@ -445,11 +437,11 @@ brew install qpdf           # macOS
 const { generatePdfBatched } = require('quick-pdf');
 
 const result = await generatePdfBatched(
-  data.findings, // e.g. 150 items, one per page
+  data.questions, // e.g. 150 items, one per page
   (chunkItems, meta) => {
     // Build HTML for just this chunk. Use meta.pageOffset to compute
     // correct absolute page numbers yourself — see caveat below.
-    return buildReportHtml({ ...data, findings: chunkItems, pageOffset: meta.pageOffset });
+    return buildReportHtml({ ...data, questions: chunkItems, pageOffset: meta.pageOffset });
   },
   {
     outputPath: '/tmp/report.pdf',
@@ -493,7 +485,7 @@ making Chromium's built-in counters accurate:
 
 ```js
 await generateChunkedPdf({
-  template, data, chunkKey: 'findings',
+  template, data, chunkKey: 'questions',
   outputPath: '/tmp/report.pdf',
   generateOptions: {
     footerTemplate: `
