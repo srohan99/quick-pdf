@@ -38,7 +38,7 @@ function getSharp() {
 let sharpAvailable = null;
 /**
  * Non-throwing check, used only by generatePdf's AUTO-detection path —
- * so upgrading quick-pdf doesn't suddenly break existing image-heavy PDF
+ * so upgrading quick-pdf-gen doesn't suddenly break existing image-heavy PDF
  * generation for anyone who hasn't run `npm install sharp` yet. Explicit
  * `optimizeImages: true` still throws a clear error via getSharp() if
  * sharp is genuinely missing, since that's a deliberate ask.

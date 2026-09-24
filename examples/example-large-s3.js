@@ -2,7 +2,7 @@ const { generatePdf, closeBrowser } = require('../src/index');
 
 // Example: a large report pulling images from S3 (or any remote host).
 //
-// quick-pdf handles remote images automatically: after the page loads,
+// quick-pdf-gen handles remote images automatically: after the page loads,
 // every <img> is individually waited on (load or error, each with its
 // own failsafe timeout) rather than relying only on a generic
 // network-idle heuristic — so you don't need to fiddle with waitUntil

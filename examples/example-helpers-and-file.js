@@ -17,7 +17,7 @@ registerHelper('ifEquals', function (operand1, operator, operand2, options) {
   return result ? options.fn(this) : options.inverse(this);
 });
 
-// You can pass a .handlebars/.hbs file path directly — quick-pdf detects
+// You can pass a .handlebars/.hbs file path directly — quick-pdf-gen detects
 // it by extension + existence on disk, reads it, and caches the
 // compiled version by path (so repeated calls with the same path only
 // compile once).

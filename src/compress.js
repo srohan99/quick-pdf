@@ -118,7 +118,7 @@ function assertKnownPreset(preset) {
 function assertGhostscriptOrThrow(available) {
   if (!available) {
     throw new Error(
-      'quick-pdf compression requires Ghostscript ("gs") to be installed on the system.\n' +
+      'quick-pdf-gen compression requires Ghostscript ("gs") to be installed on the system.\n' +
       '  Ubuntu/Debian: sudo apt-get install ghostscript\n' +
       '  macOS:         brew install ghostscript\n' +
       '  Windows:       choco install ghostscript (or download from ghostscript.com)\n' +
@@ -203,8 +203,8 @@ async function compressFile(inputPath, outputPath, quality = 'standard') {
 async function compressPdf(pdfBuffer, quality = 'standard') {
   const tmpDir = os.tmpdir();
   const id = crypto.randomBytes(8).toString('hex');
-  const inputPath = path.join(tmpDir, `quick-pdf-in-${id}.pdf`);
-  const outputPath = path.join(tmpDir, `quick-pdf-out-${id}.pdf`);
+  const inputPath = path.join(tmpDir, `quick-pdf-gen-in-${id}.pdf`);
+  const outputPath = path.join(tmpDir, `quick-pdf-gen-out-${id}.pdf`);
 
   await fs.writeFile(inputPath, pdfBuffer);
   try {

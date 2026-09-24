@@ -1,5 +1,5 @@
 {
-  "name": "quick-pdf",
+  "name": "quick-pdf-gen",
   "version": "3.3.0",
   "description": "Give it HTML + data, get back a PDF as base64 (or write straight to disk for large files). Supports Handlebars strings, .handlebars files, or native JS template functions, custom Handlebars helpers, dynamic headers/footers, automatic image/font waiting for remote assets, optional Ghostscript compression, and large-PDF-safe output. Reuses one Puppeteer browser instance for speed.",
   "main": "src/index.js",
@@ -35,7 +35,7 @@
   },
   "repository": {
   "type": "git",
-  "url": "https://github.com/srohan99/quick-pdf.git"
+  "url": "https://github.com/srohan99/quick-pdf-gen.git"
   }
 
 }

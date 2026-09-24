@@ -70,7 +70,7 @@ function getBrowser(launchOptions = {}) {
 
 /**
  * Handlebars is a regular dependency (installed automatically with
- * `npm install quick-pdf`), but still loaded lazily via require() here —
+ * `npm install quick-pdf-gen`), but still loaded lazily via require() here —
  * so processes that only ever use native JS function templates don't
  * pay any Handlebars parsing/init cost at startup.
  *
@@ -258,7 +258,7 @@ function resolveAutoOptions(html, options) {
   // "RangeError: Invalid string length" just because outputPath wasn't set.
   const autoOutputPath =
     estimatedMB > AUTO_BASE64_LIMIT_MB
-      ? path.join(os.tmpdir(), `quick-pdf-auto-${crypto.randomBytes(6).toString('hex')}.pdf`)
+      ? path.join(os.tmpdir(), `quick-pdf-gen-auto-${crypto.randomBytes(6).toString('hex')}.pdf`)
       : null;
 
   return { autoTimeout, autoCompress, autoOutputPath, estimatedMB, totalImageCount };
@@ -315,7 +315,7 @@ async function generatePdf(htmlTemplate, data = {}, options = {}) {
   // is fast and helps even moderately image-heavy documents.
   //
   // The AUTO path only runs if "sharp" is actually installed, so
-  // upgrading quick-pdf never breaks existing image-heavy PDF generation
+  // upgrading quick-pdf-gen never breaks existing image-heavy PDF generation
   // for anyone who hasn't added sharp yet — it just silently keeps the
   // old (Ghostscript-only) behavior. Explicit `optimizeImages: true`
   // always throws a clear error if sharp is genuinely missing, since
@@ -388,7 +388,7 @@ async function generatePdf(htmlTemplate, data = {}, options = {}) {
 
     if (outputPath) {
       if (compressOption) {
-        const tmpPath = path.join(os.tmpdir(), `quick-pdf-raw-${crypto.randomBytes(8).toString('hex')}.pdf`);
+        const tmpPath = path.join(os.tmpdir(), `quick-pdf-gen-raw-${crypto.randomBytes(8).toString('hex')}.pdf`);
         await page.pdf({ ...pdfCallOptions, path: tmpPath });
         try {
           const quality = compressOption === true ? 'standard' : compressOption;

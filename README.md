@@ -1,4 +1,4 @@
-# quick-pdf
+# quick-pdf-gen
 
 Give it an HTML template + data → get back a PDF as base64 (or write
 straight to disk for large files). One shared Puppeteer browser instance
@@ -8,7 +8,7 @@ per request.
 ## Install
 
 ```bash
-npm install quick-pdf
+npm install quick-pdf-gen
 ```
 `puppeteer` and `handlebars` are installed automatically as dependencies
 — no separate install step needed.
@@ -16,7 +16,7 @@ npm install quick-pdf
 ## Usage
 
 ```js
-const { generatePdf, closeBrowser } = require('quick-pdf');
+const { generatePdf, closeBrowser } = require('quick-pdf-gen');
 
 const html = `<h1>Hello {{name}}</h1>`;
 const base64Pdf = await generatePdf(html, { name: 'John' });
@@ -56,7 +56,7 @@ No helpers are registered by default — this is intentionally left to
 you, since helper needs are entirely project-specific.
 
 ```js
-const { registerHelper, registerPartial } = require('quick-pdf');
+const { registerHelper, registerPartial } = require('quick-pdf-gen');
 
 registerHelper('ifEquals', function (a, operator, b, options) {
   const ops = { '===': (l, r) => l === r, '>=': (l, r) => l >= r /* ... */ };
@@ -73,14 +73,14 @@ that needs them — ideally in one dedicated file you `require()` first:
 
 ```js
 // helpers.js — side-effect import, registers everything
-const { registerHelper } = require('quick-pdf');
+const { registerHelper } = require('quick-pdf-gen');
 registerHelper('ifEquals', function (a, b, options) { /* ... */ });
 module.exports = {};
 ```
 ```js
 // main.js
 require('./helpers'); // must come first
-const { generatePdf } = require('quick-pdf');
+const { generatePdf } = require('quick-pdf-gen');
 ```
 
 Compiled templates are cached, so a helper registered *after* a
@@ -118,14 +118,14 @@ const base64Pdf = await generatePdf(htmlTemplate, data, {
 The actual bottleneck in image-heavy PDF generation usually isn't
 Chromium or Ghostscript individually — it's that **both** end up
 decoding the same full-resolution source images: Chromium to paint
-them, then Ghostscript again to compress them afterward. `quick-pdf`
+them, then Ghostscript again to compress them afterward. `quick-pdf-gen`
 fixes this at the root by resizing/recompressing embedded base64 images
 **before** Chromium ever sees them, using `sharp` (built on `libvips`,
 a fast native C library).
 
 ```bash
 npm install sharp   # optional dependency — installs automatically with
-                     # `npm install quick-pdf`, but generatePdf() gracefully
+                     # `npm install quick-pdf-gen`, but generatePdf() gracefully
                      # skips this optimization if it's genuinely missing
 ```
 
@@ -134,7 +134,7 @@ lower than `compress`'s ~20MB threshold, since resizing is fast and
 usually removes the need for compression entirely (the output is
 already small). If `sharp` isn't installed, this auto-path silently
 skips and falls back to the old Ghostscript-only behavior — upgrading
-`quick-pdf` never breaks existing PDF generation just because `sharp`
+`quick-pdf-gen` never breaks existing PDF generation just because `sharp`
 hasn't been added yet.
 
 ```js
@@ -250,7 +250,7 @@ const base64Pdf = await generatePdf(htmlTemplate, data, { waitForImages: false }
 
 None of the popular HTML-to-PDF npm packages (`html-pdf-node`,
 `puppeteer-html-pdf`, `pdf-puppeteer`) offer PDF compression — Puppeteer's
-`page.pdf()` doesn't have one either. quick-pdf adds it via Ghostscript,
+`page.pdf()` doesn't have one either. quick-pdf-gen adds it via Ghostscript,
 the same engine most PDF software uses under the hood for this.
 **Off by default** — pass `compress` to opt in.
 
@@ -266,7 +266,7 @@ const base64Pdf = await generatePdf(htmlTemplate, data);              // default
 const smaller = await generatePdf(htmlTemplate, data, { compress: true }); // 'standard' preset
 const smallest = await generatePdf(htmlTemplate, data, { compress: 'screen' });
 
-const { compressPdf } = require('quick-pdf');
+const { compressPdf } = require('quick-pdf-gen');
 const smallerBuffer = await compressPdf(existingPdfBuffer, 'standard');
 ```
 
@@ -320,7 +320,7 @@ console.log(result); // { path: '/tmp/report.pdf', bytes: 48213000 }
 Compress a huge PDF you already have on disk, file-to-file, without
 loading it into memory:
 ```js
-const { compressFile } = require('quick-pdf');
+const { compressFile } = require('quick-pdf-gen');
 await compressFile('/tmp/big-input.pdf', '/tmp/big-output.pdf', 'standard');
 ```
 
@@ -344,7 +344,7 @@ yourself) every time. `generateChunkedPdf` does that automatically —
 point it at your template, full data, and which array field to split:
 
 ```js
-const { generateChunkedPdf } = require('quick-pdf');
+const { generateChunkedPdf } = require('quick-pdf-gen');
 
 const result = await generateChunkedPdf({
   template: path.join(__dirname, 'report.handlebars'),
@@ -354,13 +354,13 @@ const result = await generateChunkedPdf({
 });
 ```
 
-`outputPath` is optional. If omitted, quick-pdf writes chunk and merge files
+`outputPath` is optional. If omitted, quick-pdf-gen writes chunk and merge files
 only to its internal temporary directory, returns the final PDF as a `Buffer`,
 and removes every temporary file before the promise resolves.
 
 ### `chunkKey` is required
 
-`chunkKey` identifies the array field (or fields) that quick-pdf should split.
+`chunkKey` identifies the array field (or fields) that quick-pdf-gen should split.
 Pass a string for one array or an array of strings for multiple arrays. Each
 named field must exist in `data` and be an array; nested fields use dot paths.
 
@@ -434,7 +434,7 @@ brew install qpdf           # macOS
 ```
 
 ```js
-const { generatePdfBatched } = require('quick-pdf');
+const { generatePdfBatched } = require('quick-pdf-gen');
 
 const result = await generatePdfBatched(
   data.questions, // e.g. 150 items, one per page
@@ -477,7 +477,7 @@ you'll still get a valid merged PDF, just with incorrect footer numbers.
 
 ### Accurate page numbers for variable-height chunked content
 
-When items can flow onto more than one physical page, quick-pdf automatically
+When items can flow onto more than one physical page, quick-pdf-gen automatically
 handles correct pagination whenever `generateOptions` has a header or footer.
 It first renders and merges the chunks, counts the actual PDF pages, then
 stamps the header/footer over the merged result. This preserves chunking while
@@ -600,4 +600,4 @@ rendering begins.
   counter across a loop), remember the browser/process is long-lived —
   reset that state explicitly at the start of each document, or it will
   carry over incorrectly into the next `generatePdf()` call.
-# quick-pdf
+# quick-pdf-gen

@@ -110,9 +110,9 @@ function paginationPagesHtml(pageCount) {
   // across Chromium versions. The final page does not need a break.
   return `<!doctype html><html><head><style>
     html, body { margin: 0; padding: 0; }
-    .quick-pdf-pagination-page { height: 1px; break-after: page; page-break-after: always; }
-    .quick-pdf-pagination-page:last-child { break-after: auto; page-break-after: auto; }
-  </style></head><body>${'<div class="quick-pdf-pagination-page">&nbsp;</div>'.repeat(pageCount)}</body></html>`;
+    .quick-pdf-gen-pagination-page { height: 1px; break-after: page; page-break-after: always; }
+    .quick-pdf-gen-pagination-page:last-child { break-after: auto; page-break-after: auto; }
+  </style></head><body>${'<div class="quick-pdf-gen-pagination-page">&nbsp;</div>'.repeat(pageCount)}</body></html>`;
 }
 
 /**
@@ -224,7 +224,7 @@ function createGeneratePdfBatched(generatePdf) {
           ? chunkResult
           : { template: chunkResult, data: {} };
 
-      const partPath = path.join(tmpDir, `quick-pdf-part-${idx}-${crypto.randomBytes(4).toString('hex')}.pdf`);
+      const partPath = path.join(tmpDir, `quick-pdf-gen-part-${idx}-${crypto.randomBytes(4).toString('hex')}.pdf`);
 
       await generatePdf(template, chunkData, {
         ...chunkGenerateOptions,
@@ -234,9 +234,9 @@ function createGeneratePdfBatched(generatePdf) {
       partPaths[idx] = partPath;
     });
 
-    const finalPath = options.outputPath || path.join(tmpDir, `quick-pdf-merged-${crypto.randomBytes(4).toString('hex')}.pdf`);
+    const finalPath = options.outputPath || path.join(tmpDir, `quick-pdf-gen-merged-${crypto.randomBytes(4).toString('hex')}.pdf`);
     const mergedPath = physicalPageNumbers
-      ? path.join(tmpDir, `quick-pdf-unpaginated-${crypto.randomBytes(4).toString('hex')}.pdf`)
+      ? path.join(tmpDir, `quick-pdf-gen-unpaginated-${crypto.randomBytes(4).toString('hex')}.pdf`)
       : finalPath;
 
     try {
@@ -244,7 +244,7 @@ function createGeneratePdfBatched(generatePdf) {
 
       if (physicalPageNumbers) {
         const pageCount = await getPageCount(mergedPath);
-        const stampPath = path.join(tmpDir, `quick-pdf-pagination-${crypto.randomBytes(4).toString('hex')}.pdf`);
+        const stampPath = path.join(tmpDir, `quick-pdf-gen-pagination-${crypto.randomBytes(4).toString('hex')}.pdf`);
         try {
           // `generatePdf` supplies Chromium's pageNumber/totalPages values,
           // now over the full page count rather than an individual chunk.
